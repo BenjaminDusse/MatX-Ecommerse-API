@@ -9,10 +9,14 @@ class Promotion(models.Model):
     description = models.CharField(max_length=255)
     discount = models.FloatField()
 
+    def __str__(self):
+        return self.description
+
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
-    featured_product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='+', blank=True)
+    featured_product = models.ForeignKey(
+        'Product', on_delete=models.SET_NULL, null=True, related_name='+', blank=True)
 
     def __str__(self) -> str:
         return self.title
@@ -32,8 +36,11 @@ class Product(models.Model):
     )
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
-    collection = models.ForeignKey('Collection', on_delete=models.PROTECT, related_name='products')
-    promotions = models.ManyToManyField(Promotion, blank=True)  # related_name='products'
+    image = models.ImageField()
+    collection = models.ForeignKey(
+        'Collection', on_delete=models.PROTECT, related_name='products')
+    promotions = models.ManyToManyField(
+        Promotion, blank=True)  # related_name='products'
 
     def __str__(self) -> str:
         return self.title
@@ -55,8 +62,10 @@ class Customer(models.Model):
 
     phone = models.CharField(max_length=255)
     birth_date = models.DateField(null=True)
-    membership = models.CharField(max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    membership = models.CharField(
+        max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} "
@@ -95,13 +104,15 @@ class Order(models.Model):
 
     class Meta:
         permissions = [
-            ('cancel_order', 'Can cancel order') # 2
+            ('cancel_order', 'Can cancel order')  # 2
         ]
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.PROTECT)  # related_name='items'
-    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='orderitems')
+    order = models.ForeignKey(
+        Order, on_delete=models.PROTECT)  # related_name='items'
+    product = models.ForeignKey(
+        Product, on_delete=models.PROTECT, related_name='orderitems')
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
 
@@ -118,7 +129,9 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")  # rather thans cartitem_set
+    # rather thans cartitem_set
+    cart = models.ForeignKey(
+        Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)]
@@ -129,7 +142,8 @@ class CartItem(models.Model):
 
 
 class Review(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews', null=True)
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name='reviews', null=True)
     name = models.CharField(max_length=255)
     description = models.TextField()
     date = models.DateTimeField(auto_now_add=True)
@@ -137,3 +151,36 @@ class Review(models.Model):
     def __str__(self):
         return self.product.title
 
+
+class Transaction(models.Model):
+    INCOME = 'income'
+    EXPENSE = 'expense'
+
+    PRICE_TYPE = (
+        (INCOME, 'income'),
+        (EXPENSE, 'expense'),
+    )
+
+    CASH = 'Naqd'
+    PLASTIC_CARD = 'Plastik kartochka'
+    MONEY_TRANSFER = "Pul o'tkazish"
+
+    PAYMENT_TYPE = (
+        (CASH, "Cash"),
+        (PLASTIC_CARD, "Plastic Card"),
+        (MONEY_TRANSFER, "Money Transfer")
+    )
+    client = models.ForeignKey(
+        Customer, on_delete=models.CASCADE, related_name='transactions')
+    paid_at = models.DateTimeField(auto_now_add=True)
+    price_type = models.CharField(max_length=50, choices=PRICE_TYPE)
+    payment_type = models.CharField(max_length=50, choices=PAYMENT_TYPE)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    amount = models.DecimalField(max_digits=6, decimal_places=2)
+    description = models.TextField(max_length=500)
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name='transactions')
+
+    def __str__(self):
+        return self.clinet.user.username
