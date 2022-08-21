@@ -31,13 +31,6 @@ from rest_framework.parsers import FileUploadParser
 # chart-dashboard: transaction sources
 # campaigns today, yesterday, before yesterday
 
-# class UsersListView(APIView):
-#     @swagger_auto_schema(responses={200: UserSerializer(many=True)})
-#     def get(self, request):
-#         users = User.objects.all()
-#         serializer = UserSerializer(users, many=True)
-#         return Response(serializer.data)
-
 class UserViewSet(mixins.CreateModelMixin,
                   mixins.ListModelMixin,
                   mixins.RetrieveModelMixin,
@@ -47,6 +40,8 @@ class UserViewSet(mixins.CreateModelMixin,
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+    
+
 
 class ProductListViewSet(viewsets.ModelViewSet):
 
@@ -54,3 +49,4 @@ class ProductListViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     filter_backends = [SearchFilter, DjangoFilterBackend]
     filterset_class = ProductFilter
+
